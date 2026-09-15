@@ -52,3 +52,18 @@ button { cursor: pointer; }
 .rules-card .toggle { border: 0; padding: 0; cursor: pointer; }.rules-card .toggle.on { background: #a9ca40; }.rules-card .toggle.on::after { transform: translateX(12px); }
 .provider-card { grid-column: 1 / -1; }.provider-card > p { color: #7b9085; font-size: 12px; line-height: 1.5; }.provider-state { color: #9b6f32; font: 700 10px Arial; text-transform: uppercase; letter-spacing: .08em; }.provider-state i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #d3aa5a; margin-right: 5px; }.provider-state.connected { color: #4e6d28; }.provider-state.connected i { background: #a9ca40; }
 .rules-form { display: grid; gap: 10px; }.rule-input { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e4e8e1; padding-top: 12px; color: #526961; font-size: 12px; }.rule-input input { width: 70px; border: 1px solid #cbd6ca; background: #f7f8f4; color: #173333; padding: 7px; text-align: right; border-radius: 3px; }.save-rules { border: 0; background: #173333; color: #f5f3e9; padding: 10px 12px; border-radius: 3px; font-size: 11px; margin-top: 5px; }
+
+/* Visual state for real artwork and playback ownership. */
+.cover { background-size: cover; background-position: center; box-shadow: 0 15px 32px rgba(0,0,0,.22); }
+.cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(9,27,29,.05), rgba(9,27,29,.7)); }
+.cover::after { animation: cover-pulse 3s ease-in-out infinite; }
+.player-live-state { display: grid; place-items: center; gap: 4px; min-width: 58px; color: var(--acid); }
+.player-live-state span { font-size: 22px; line-height: 1; animation: live-pulse 1.5s ease-in-out infinite; }
+.player-live-state small { font: 700 9px Arial; letter-spacing: .12em; }
+.player-admin { position: relative; overflow: hidden; box-shadow: 0 18px 40px rgba(23,51,51,.08); }
+.player-admin::after { content: ""; position: absolute; width: 180px; height: 180px; right: -80px; top: -80px; border: 1px solid rgba(169,202,64,.32); border-radius: 50%; animation: admin-orbit 7s linear infinite; }
+.admin-art { background-size: cover; background-position: center; box-shadow: 0 12px 24px rgba(23,51,51,.18); }
+@keyframes cover-pulse { 50% { inset: 20px; opacity: .55; } }
+@keyframes live-pulse { 50% { opacity: .35; transform: scale(.72); } }
+@keyframes admin-orbit { to { transform: rotate(360deg); } }
+@media (max-width: 620px) { .player-live-state { min-width: 42px; }.player-live-state small { font-size: 8px; } }

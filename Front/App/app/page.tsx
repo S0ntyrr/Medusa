@@ -4,21 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 const tracks = [
-  { id: "1", provider: "demo", title: "LUNA", artist: "Feid", genre: "Urbano", color: "cover-lime" },
-  { id: "2", provider: "demo", title: "Classy 101", artist: "Feid, Young Miko", genre: "Urbano", color: "cover-coral" },
-  { id: "3", provider: "demo", title: "Ojitos Lindos", artist: "Bad Bunny, Bomba Estereo", genre: "Tropical", color: "cover-sky" },
-  { id: "4", provider: "demo", title: "Todo Contigo", artist: "Alvaro de Luna", genre: "Pop", color: "cover-yellow" },
-  { id: "5", provider: "demo", title: "La Falda", artist: "Myke Towers", genre: "Urbano", color: "cover-violet" },
+  { id: "1", provider: "demo", title: "LUNA", artist: "Feid", genre: "Urbano", color: "cover-lime", artworkUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=85" },
+  { id: "2", provider: "demo", title: "Classy 101", artist: "Feid, Young Miko", genre: "Urbano", color: "cover-coral", artworkUrl: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=85" },
+  { id: "3", provider: "demo", title: "Ojitos Lindos", artist: "Bad Bunny, Bomba Estereo", genre: "Tropical", color: "cover-sky", artworkUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=85" },
+  { id: "4", provider: "demo", title: "Todo Contigo", artist: "Alvaro de Luna", genre: "Pop", color: "cover-yellow", artworkUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=600&q=85" },
+  { id: "5", provider: "demo", title: "La Falda", artist: "Myke Towers", genre: "Urbano", color: "cover-violet", artworkUrl: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=600&q=85" },
 ];
 
 const initialQueue = [
-  { id: "demo-1", position: 1, title: "Normal", artist: "Feid", votes: 18, color: "cover-violet" },
-  { id: "demo-2", position: 2, title: "Qlona", artist: "Karol G, Peso Pluma", votes: 12, color: "cover-coral" },
-  { id: "demo-3", position: 3, title: "Beso", artist: "Rosalia, Rauw Alejandro", votes: 9, color: "cover-sky" },
+  { id: "demo-1", position: 1, title: "Normal", artist: "Feid", votes: 18, color: "cover-violet", artworkUrl: tracks[4].artworkUrl },
+  { id: "demo-2", position: 2, title: "Qlona", artist: "Karol G, Peso Pluma", votes: 12, color: "cover-coral", artworkUrl: tracks[1].artworkUrl },
+  { id: "demo-3", position: 3, title: "Beso", artist: "Rosalia, Rauw Alejandro", votes: 9, color: "cover-sky", artworkUrl: tracks[2].artworkUrl },
 ];
 
-function Cover({ color, small = false }: { color: string; small?: boolean }) {
-  return <div aria-hidden="true" className={`cover ${color} ${small ? "cover-small" : ""}`}><span>✦</span></div>;
+function Cover({ color, artworkUrl, small = false }: { color: string; artworkUrl?: string; small?: boolean }) {
+  return <div aria-hidden="true" className={`cover ${color} ${small ? "cover-small" : ""}`} style={artworkUrl ? { backgroundImage: `url(${artworkUrl})` } : undefined}><span>✦</span></div>;
 }
 
 export default function Home() {
@@ -37,7 +37,7 @@ export default function Home() {
     const timer = window.setTimeout(() => {
       void fetch(`${apiUrl}/api/music/search?query=${encodeURIComponent(query)}`, { signal: controller.signal })
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("Search failed")))
-        .then((remoteTracks: Array<{ provider: string; provider_track_id: string; title: string; artist: string }>) => {
+        .then((remoteTracks: Array<{ provider: string; provider_track_id: string; title: string; artist: string; artwork_url?: string | null }>) => {
           setSearchTracks(remoteTracks.map((track, index) => ({
             id: track.provider_track_id,
             provider: track.provider,
@@ -45,6 +45,7 @@ export default function Home() {
             artist: track.artist,
             genre: "Música",
             color: tracks[index % tracks.length].color,
+            artworkUrl: track.artwork_url ?? tracks[index % tracks.length].artworkUrl,
           })));
         })
         .catch(() => setSearchTracks(tracks));
@@ -77,6 +78,7 @@ export default function Home() {
               artist: track.artist,
               votes: track.votes,
               color: tracks[index % tracks.length].color,
+              artworkUrl: tracks[index % tracks.length].artworkUrl,
             })));
           })
           .catch(() => undefined);
@@ -102,7 +104,7 @@ export default function Home() {
       if (!apiUrl) return;
       void fetch(`${apiUrl}/api/queue`, { credentials: "include" })
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("Queue unavailable")))
-        .then((remoteQueue: Array<{ id: string; title: string; artist: string; votes: number }>) => setQueue(remoteQueue.map((track, index) => ({ id: track.id, position: index + 1, title: track.title, artist: track.artist, votes: track.votes, color: tracks[index % tracks.length].color }))))
+        .then((remoteQueue: Array<{ id: string; title: string; artist: string; votes: number }>) => setQueue(remoteQueue.map((track, index) => ({ id: track.id, position: index + 1, title: track.title, artist: track.artist, votes: track.votes, color: tracks[index % tracks.length].color, artworkUrl: tracks[index % tracks.length].artworkUrl }))))
         .catch(() => undefined);
     };
     const channel = realtimeClient.channel("public-queue").on("postgres_changes", { event: "*", schema: "public", table: "queue_items" }, refreshQueue).subscribe();
@@ -122,7 +124,7 @@ export default function Home() {
         });
         if (!response.ok) return;
         const created = await response.json() as { id: string };
-        setQueue((current) => [...current, { id: created.id, position: current.length + 1, title: track.title, artist: track.artist, votes: 0, color: track.color }]);
+        setQueue((current) => [...current, { id: created.id, position: current.length + 1, title: track.title, artist: track.artist, votes: 0, color: track.color, artworkUrl: track.artworkUrl }]);
       } catch {
         return;
       }
@@ -150,10 +152,10 @@ export default function Home() {
     <nav className="topbar"><div className="brand-mark"><span className="brand-icon">✦</span><span>RITMO <em>FROST</em></span></div><div className="venue-pill"><span className="live-dot" /> La Esquina · Mesa 03{sessionActive && <small> · activa</small>}</div><a className="icon-button" href="/admin" aria-label="Abrir panel de administrador">•••</a></nav>
     <section className="hero"><p className="eyebrow">Tu visita, tu soundtrack</p><h1>¿Qué quieres<br /><i>escuchar?</i></h1><p className="hero-copy">Pide una canción, súbela con votos y deja que la noche siga fluyendo.</p>
       <label className="search-box"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca canción o artista" aria-label="Buscar canción o artista" /><kbd>/</kbd></label>
-      {query && <div className="search-results">{results.length ? results.map((track) => <div className="result-row" key={track.id}><Cover color={track.color} small /><div><strong>{track.title}</strong><small>{track.artist}</small></div><button onClick={() => requestTrack(track.id)} className="add-button" aria-label={`Solicitar ${track.title}`}>+</button></div>) : <p className="empty-state">No encontramos esa canción todavía.</p>}</div>}
+      {query && <div className="search-results">{results.length ? results.map((track) => <div className="result-row" key={track.id}><Cover color={track.color} artworkUrl={track.artworkUrl} small /><div><strong>{track.title}</strong><small>{track.artist}</small></div><button onClick={() => requestTrack(track.id)} className="add-button" aria-label={`Solicitar ${track.title}`}>+</button></div>) : <p className="empty-state">No encontramos esa canción todavía.</p>}</div>}
     </section>
-    <section className="now-playing"><div className="section-heading"><div><p className="eyebrow">Sonando ahora</p><h2>Tu mesa tiene el control</h2></div><div className="equalizer" aria-label="Reproduciendo"><i /><i /><i /><i /><i /></div></div><div className="player-card"><Cover color="cover-lime" /><div className="track-info"><p className="track-kicker">#01 · En reproducción</p><h3>Classy 101</h3><p>Feid, Young Miko</p><div className="progress"><span /><b>2:14</b><b>3:16</b></div></div><button className="play-button" aria-label="Pausar canción">Ⅱ</button></div></section>
-    <section className="queue-section"><div className="section-heading"><div><p className="eyebrow">La siguiente ronda</p><h2>En la cola <span>· {queue.length}</span></h2></div><button className="text-button">Ver todo <span>↗</span></button></div><div className="queue-list">{queue.map((track) => <div className="queue-row" key={track.position}><span className="queue-position">0{track.position}</span><Cover color={track.color} small /><div className="queue-track"><strong>{track.title}</strong><small>{track.artist}</small></div><button className={`vote-button ${voted.includes(track.position) ? "is-voted" : ""}`} onClick={() => void voteForTrack(track.id, track.position)} aria-label={`Votar por ${track.title}`}><span>♥</span> {track.votes}</button></div>)}</div></section>
+    <section className="now-playing"><div className="section-heading"><div><p className="eyebrow">Sonando ahora</p><h2>Tu mesa tiene el control</h2></div><div className="equalizer" aria-label="Reproduciendo"><i /><i /><i /><i /><i /></div></div><div className="player-card"><Cover color="cover-coral" artworkUrl={tracks[1].artworkUrl} /><div className="track-info"><p className="track-kicker">#01 · En reproducción</p><h3>Classy 101</h3><p>Feid, Young Miko</p><div className="progress"><span /><b>2:14</b><b>3:16</b></div></div><div className="player-live-state" aria-label="Canción en reproducción"><span>●</span><small>EN VIVO</small></div></div></section>
+    <section className="queue-section"><div className="section-heading"><div><p className="eyebrow">La siguiente ronda</p><h2>En la cola <span>· {queue.length}</span></h2></div><button className="text-button">Ver todo <span>↗</span></button></div><div className="queue-list">{queue.map((track) => <div className="queue-row" key={track.position}><span className="queue-position">0{track.position}</span><Cover color={track.color} artworkUrl={track.artworkUrl} small /><div className="queue-track"><strong>{track.title}</strong><small>{track.artist}</small></div><button className={`vote-button ${voted.includes(track.position) ? "is-voted" : ""}`} onClick={() => void voteForTrack(track.id, track.position)} aria-label={`Votar por ${track.title}`}><span>♥</span> {track.votes}</button></div>)}</div></section>
     {requested && <div className="toast" role="status"><span>✓</span><div><strong>¡Canción agregada!</strong><small>Está en la cola. Que siga el ritmo.</small></div></div>}
   </main>;
 }
