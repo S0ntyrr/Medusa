@@ -205,14 +205,30 @@ export default function AdminPage() {
   }
 
   async function connectSpotify() {
-    if (!apiUrl || !accessToken) return;
-    const response = await fetch(`${apiUrl}/api/admin/spotify/connect`, { headers: { Authorization: `Bearer ${accessToken}` } });
-    if (!response.ok) {
-      setNotice("Configura Spotify OAuth en el backend");
+    if (!apiUrl) {
+      setNotice("Falta NEXT_PUBLIC_API_URL en el frontend");
       return;
     }
-    const value = await response.json() as { authorization_url: string };
-    window.location.assign(value.authorization_url);
+    if (!accessToken) {
+      setNotice("La sesión de administrador no está disponible. Vuelve a iniciar sesión");
+      return;
+    }
+    try {
+      const response = await fetch(`${apiUrl}/api/admin/spotify/connect`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null) as { detail?: string } | null;
+        setNotice(detail?.detail ?? "Configura Spotify OAuth en el backend");
+        return;
+      }
+      const value = await response.json() as { authorization_url?: string };
+      if (!value.authorization_url) {
+        setNotice("El backend no devolvió la URL de autorización");
+        return;
+      }
+      window.location.assign(value.authorization_url);
+    } catch {
+      setNotice("No se pudo contactar con el backend de Spotify");
+    }
   }
 
   useEffect(() => {

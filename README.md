@@ -40,6 +40,44 @@ La autenticación administrativa utiliza Supabase Auth. Crea el usuario desde **
 
 Spotify se conecta desde el panel mediante OAuth Authorization Code. Configura en `Back/App/.env` el Client ID, Client Secret y Redirect URI creados en el dashboard de Spotify. El `client_secret` y los tokens se quedan en el backend y los tokens se almacenan cifrados. El Web Playback SDK requiere una cuenta Premium y autorización de Spotify para el uso previsto; no debe considerarse automáticamente una solución de reproducción comercial para el establecimiento.
 
+### URLs de Spotify y del despliegue
+
+Debes manejar tres URLs distintas:
+
+```env
+# Frontend publicado en Cloudflare
+FRONTEND_URL=https://TU-FRONTEND.workers.dev
+
+# Backend publicado en Render
+NEXT_PUBLIC_API_URL=https://medusa-api-hytt.onrender.com
+
+# Callback OAuth del backend
+SPOTIFY_REDIRECT_URI=https://medusa-api-hytt.onrender.com/api/admin/spotify/callback
+```
+
+En desarrollo local utiliza:
+
+```env
+# Back/App/.env
+FRONTEND_URL=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000
+SPOTIFY_REDIRECT_URI=http://localhost:8000/api/admin/spotify/callback
+
+# Front/App/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Para conectar Spotify:
+
+1. Entra en [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) y crea una aplicación.
+2. Copia el `Client ID` y el `Client Secret` solamente a las variables del backend. Nunca al frontend.
+3. En **Edit Settings → Redirect URIs**, registra exactamente la URL de `SPOTIFY_REDIRECT_URI` que vayas a utilizar. Spotify distingue entre `localhost` y producción.
+4. En Render crea las variables `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`, `FRONTEND_URL` y `ALLOWED_ORIGINS`.
+5. En el frontend configura `NEXT_PUBLIC_API_URL` con la URL de Render y vuelve a ejecutar el build/deploy.
+6. Crea el usuario administrador en Supabase Auth, vincúlalo en `admin_users`, inicia sesión en `/admin` y pulsa **Conectar Spotify**.
+
+Si el botón muestra `Spotify OAuth is not configured`, faltan el Client ID o el Client Secret en el backend. Si Spotify rechaza la autorización, revisa que el Redirect URI coincida carácter por carácter.
+
 ## Bloques completados
 
 - Sesiones anónimas temporales con heartbeat y expiración por establecimiento.
