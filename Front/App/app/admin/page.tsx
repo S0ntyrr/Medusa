@@ -105,27 +105,40 @@ export default function AdminPage() {
       setNotice("Modo local: control actualizado");
       return;
     }
-    const response = await fetch(`${apiUrl}/api/player/${action}`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
-    if (!response.ok) {
-      setNotice("No se pudo actualizar el reproductor");
-      return;
+    try {
+      const response = await fetch(`${apiUrl}/api/player/${action}`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
+      if (!response.ok) throw new Error("Player unavailable");
+      setPlayer(await response.json() as PlayerState);
+      setNotice(action === "skip" ? "Canción saltada" : action === "pause" ? "Reproducción pausada" : "Reproducción activa");
+    } catch {
+      setPlayer((current) => action === "skip" ? { track: null, is_playing: false } : { ...current, is_playing: action === "resume" });
+      setNotice("API no disponible: control aplicado en modo local");
     }
-    setPlayer(await response.json() as PlayerState);
-    setNotice(action === "skip" ? "Canción saltada" : action === "pause" ? "Reproducción pausada" : "Reproducción activa");
   }
 
   async function revokeSession(sessionId: string) {
-    if (!apiUrl) return;
-    const response = await fetch(`${apiUrl}/api/admin/sessions/${sessionId}/revoke`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
-    if (response.ok) {
+    if (!apiUrl || !accessToken) {
+      setSessions((current) => current.filter((session) => session.id !== sessionId));
+      setNotice("Sesión revocada en modo local");
+      return;
+    }
+    try {
+      const response = await fetch(`${apiUrl}/api/admin/sessions/${sessionId}/revoke`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
+      if (!response.ok) throw new Error("Session unavailable");
       setSessions((current) => current.filter((session) => session.id !== sessionId));
       setNotice("Sesión revocada");
+    } catch {
+      setNotice("No se pudo revocar la sesión");
     }
   }
 
   async function toggleExplicitContent() {
-    if (!apiUrl || !accessToken) return;
     const next = { ...settings, explicit_content_allowed: !settings.explicit_content_allowed };
+    if (!apiUrl || !accessToken) {
+      setSettings(next);
+      setNotice("Regla actualizada en modo local");
+      return;
+    }
     const response = await fetch(`${apiUrl}/api/admin/settings`, { method: "PATCH", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(next) });
     if (response.ok) {
       setSettings(await response.json() as VenueSettings);
@@ -134,7 +147,11 @@ export default function AdminPage() {
   }
 
   async function removeQueueItem(queueId: string) {
-    if (!apiUrl || !accessToken) return;
+    if (!apiUrl || !accessToken) {
+      setQueue((current) => current.filter((item) => item.id !== queueId));
+      setNotice("Canción retirada en modo local");
+      return;
+    }
     const response = await fetch(`${apiUrl}/api/admin/queue/${queueId}`, { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.ok) {
       setQueue((current) => current.filter((item) => item.id !== queueId));
@@ -143,7 +160,11 @@ export default function AdminPage() {
   }
 
   async function queueAction(queueId: string, action: "skip" | "recalculate") {
-    if (!apiUrl || !accessToken) return;
+    if (!apiUrl || !accessToken) {
+      if (action === "skip") setQueue((current) => current.filter((item) => item.id !== queueId));
+      setNotice(action === "skip" ? "Canción saltada en modo local" : "Prioridades recalculadas en modo local");
+      return;
+    }
     const endpoint = action === "recalculate" ? `${apiUrl}/api/admin/queue/recalculate` : `${apiUrl}/api/admin/queue/${queueId}/skip`;
     const response = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
     if (!response.ok) return;
@@ -152,20 +173,30 @@ export default function AdminPage() {
   }
 
   async function blockArtist(artist: string) {
-    if (!apiUrl || !accessToken) return;
+    if (!apiUrl || !accessToken) {
+      setNotice(`${artist} bloqueado en modo local`);
+      return;
+    }
     const response = await fetch(`${apiUrl}/api/admin/blocklist/artists`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ artist_name: artist }) });
     if (response.ok) setNotice(`${artist} bloqueado para este local`);
   }
 
   async function blockTrack(trackId: string | undefined) {
-    if (!apiUrl || !accessToken || !trackId) return;
+    if (!trackId) return;
+    if (!apiUrl || !accessToken) {
+      setNotice("Canción bloqueada en modo local");
+      return;
+    }
     const response = await fetch(`${apiUrl}/api/admin/blocklist/tracks/${trackId}`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.ok) setNotice("Canción bloqueada para este local");
   }
 
   async function saveRules(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!apiUrl || !accessToken) return;
+    if (!apiUrl || !accessToken) {
+      setNotice("Reglas guardadas en modo local");
+      return;
+    }
     const response = await fetch(`${apiUrl}/api/admin/settings`, { method: "PATCH", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(settings) });
     if (response.ok) {
       setSettings(await response.json() as VenueSettings);

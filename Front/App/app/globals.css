@@ -34,6 +34,10 @@ body {
 button, input { font: inherit; }
 button { cursor: pointer; }
 .app-shell { min-height: 100vh; overflow: hidden; position: relative; padding: 28px clamp(20px, 5vw, 72px) 64px; background: radial-gradient(circle at 80% 12%, #1f4842 0, transparent 31%), radial-gradient(circle at 10% 90%, #143a35 0, transparent 35%), var(--background); }
+.background-art { position: absolute; inset: 0; pointer-events: none; opacity: .2; background-position: center; background-size: cover; filter: saturate(1.25); animation: background-drift 18s ease-in-out infinite alternate; }
+.drink-showcase { position: absolute; z-index: -1; right: -130px; top: 24px; width: 270px; height: 390px; background-position: center; background-size: cover; border-radius: 48% 48% 24% 24%; opacity: .72; filter: saturate(1.25) drop-shadow(0 24px 24px rgba(0,0,0,.4)); animation: drink-float 5s ease-in-out infinite; transform: rotate(5deg); }
+.drink-showcase::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,27,29,.96), transparent 45%, rgba(9,27,29,.18)); border-radius: inherit; }
+.drink-showcase span { position: absolute; right: 15px; bottom: 42px; z-index: 1; color: rgba(245,243,233,.76); font: 700 10px Arial; letter-spacing: .22em; transform: rotate(-5deg); }
 .ambient { position: absolute; pointer-events: none; border: 1px solid rgba(216,237,95,.12); border-radius: 50%; height: 460px; width: 460px; filter: blur(.2px); }
 .ambient-one { right: -220px; top: 160px; }.ambient-two { left: -330px; bottom: -180px; height: 560px; width: 560px; }
 .topbar, .hero, .now-playing, .queue-section { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
@@ -57,6 +61,7 @@ button { cursor: pointer; }
 .cover { background-size: cover; background-position: center; box-shadow: 0 15px 32px rgba(0,0,0,.22); }
 .cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(9,27,29,.05), rgba(9,27,29,.7)); }
 .cover::after { animation: cover-pulse 3s ease-in-out infinite; }
+.player-card .cover { animation: drink-float 4s ease-in-out infinite; }
 .player-live-state { display: grid; place-items: center; gap: 4px; min-width: 58px; color: var(--acid); }
 .player-live-state span { font-size: 22px; line-height: 1; animation: live-pulse 1.5s ease-in-out infinite; }
 .player-live-state small { font: 700 9px Arial; letter-spacing: .12em; }
@@ -66,4 +71,7 @@ button { cursor: pointer; }
 @keyframes cover-pulse { 50% { inset: 20px; opacity: .55; } }
 @keyframes live-pulse { 50% { opacity: .35; transform: scale(.72); } }
 @keyframes admin-orbit { to { transform: rotate(360deg); } }
+@keyframes background-drift { from { transform: scale(1); } to { transform: scale(1.06); } }
+@keyframes drink-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(1.5deg); } }
 @media (max-width: 620px) { .player-live-state { min-width: 42px; }.player-live-state small { font-size: 8px; } }
+@media (max-width: 620px) { .drink-showcase { right: -62px; top: 38px; width: 158px; height: 232px; opacity: .5; }.hero { padding-top: 72px; }.hero-copy { max-width: 285px; font-size: 15px; }.player-card { min-width: 0; align-items: center; }.player-card .cover { width: 94px; height: 94px; }.track-info { min-width: 0; }.track-info h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.progress { margin-top: 20px; }.queue-row { min-width: 0; }.queue-track { min-width: 0; } }

@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
+import blueDrinkImage from "../images/Gemini_Generated_Image_kr8yulkr8yulkr8y.jpg";
+import orangeDrinkImage from "../images/Gemini_Generated_Image_7i9p1s7i9p1s7i9p.jpg";
+
+const drinkImages = [blueDrinkImage.src, orangeDrinkImage.src];
 
 const tracks = [
-  { id: "1", provider: "demo", title: "LUNA", artist: "Feid", genre: "Urbano", color: "cover-lime", artworkUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=85" },
-  { id: "2", provider: "demo", title: "Classy 101", artist: "Feid, Young Miko", genre: "Urbano", color: "cover-coral", artworkUrl: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=85" },
-  { id: "3", provider: "demo", title: "Ojitos Lindos", artist: "Bad Bunny, Bomba Estereo", genre: "Tropical", color: "cover-sky", artworkUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=85" },
-  { id: "4", provider: "demo", title: "Todo Contigo", artist: "Alvaro de Luna", genre: "Pop", color: "cover-yellow", artworkUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=600&q=85" },
-  { id: "5", provider: "demo", title: "La Falda", artist: "Myke Towers", genre: "Urbano", color: "cover-violet", artworkUrl: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=600&q=85" },
+  { id: "1", provider: "demo", title: "LUNA", artist: "Feid", genre: "Urbano", color: "cover-lime", artworkUrl: drinkImages[0] },
+  { id: "2", provider: "demo", title: "Classy 101", artist: "Feid, Young Miko", genre: "Urbano", color: "cover-coral", artworkUrl: drinkImages[1] },
+  { id: "3", provider: "demo", title: "Ojitos Lindos", artist: "Bad Bunny, Bomba Estereo", genre: "Tropical", color: "cover-sky", artworkUrl: drinkImages[0] },
+  { id: "4", provider: "demo", title: "Todo Contigo", artist: "Alvaro de Luna", genre: "Pop", color: "cover-yellow", artworkUrl: drinkImages[1] },
+  { id: "5", provider: "demo", title: "La Falda", artist: "Myke Towers", genre: "Urbano", color: "cover-violet", artworkUrl: drinkImages[0] },
 ];
 
 const initialQueue = [
@@ -148,9 +152,9 @@ export default function Home() {
   }
 
   return <main className="app-shell">
-    <div className="ambient ambient-one" /><div className="ambient ambient-two" />
+    <div className="background-art" aria-hidden="true" style={{ backgroundImage: `linear-gradient(120deg, rgba(9,27,29,.98) 8%, rgba(9,27,29,.64) 52%, rgba(9,27,29,.94)), url(${drinkImages[1]})` }} /><div className="ambient ambient-one" /><div className="ambient ambient-two" />
     <nav className="topbar"><div className="brand-mark"><span className="brand-icon">✦</span><span>RITMO <em>FROST</em></span></div><div className="venue-pill"><span className="live-dot" /> La Esquina · Mesa 03{sessionActive && <small> · activa</small>}</div><a className="icon-button" href="/admin" aria-label="Abrir panel de administrador">•••</a></nav>
-    <section className="hero"><p className="eyebrow">Tu visita, tu soundtrack</p><h1>¿Qué quieres<br /><i>escuchar?</i></h1><p className="hero-copy">Pide una canción, súbela con votos y deja que la noche siga fluyendo.</p>
+    <section className="hero"><div className="drink-showcase" aria-hidden="true" style={{ backgroundImage: `url(${drinkImages[1]})` }}><span>MEDUSA</span></div><p className="eyebrow">Tu visita, tu soundtrack</p><h1>¿Qué quieres<br /><i>escuchar?</i></h1><p className="hero-copy">Pide una canción, súbela con votos y deja que la noche siga fluyendo.</p>
       <label className="search-box"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca canción o artista" aria-label="Buscar canción o artista" /><kbd>/</kbd></label>
       {query && <div className="search-results">{results.length ? results.map((track) => <div className="result-row" key={track.id}><Cover color={track.color} artworkUrl={track.artworkUrl} small /><div><strong>{track.title}</strong><small>{track.artist}</small></div><button onClick={() => requestTrack(track.id)} className="add-button" aria-label={`Solicitar ${track.title}`}>+</button></div>) : <p className="empty-state">No encontramos esa canción todavía.</p>}</div>}
     </section>
